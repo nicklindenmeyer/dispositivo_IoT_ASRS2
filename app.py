@@ -7,7 +7,7 @@ import time
 channel_id = "2601361"
 read_api_key = "2IMZSGDD358HBWBD"
 
-update_interval = 30
+update_interval = 10
 
 st.set_page_config(page_title="Disposivito IoT para monitoramento de energia elétrica do ASRS²", page_icon=":zap:")
 
