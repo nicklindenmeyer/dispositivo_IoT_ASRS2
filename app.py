@@ -7,13 +7,23 @@ import time
 channel_id = "2601361"
 read_api_key = "2IMZSGDD358HBWBD"
 
+#número de amostras = periodo em segundos / intervalo
+interval_data = 10
+results_live = 300/interval_data  
+results_1h = 3600/interval_data
+results_6h = 21600/interval_data
+results_12h = 43200/interval_data
+results_1d = 86400/interval_data
+results_1w = 604800/interval_data
+
+#intervalo de tempo para a página recarregar 
 update_interval = 10
 
 st.set_page_config(page_title="Disposivito IoT para monitoramento de energia elétrica do ASRS²", page_icon=":zap:")
 
 #@st.cache_data()
 def fetch_data_from_thingspeak(channel_id, read_api_key):
-    url = f"https://api.thingspeak.com/channels/{channel_id}/feeds.json?api_key={read_api_key}&results=30"
+    url = f"https://api.thingspeak.com/channels/{channel_id}/feeds.json?api_key={read_api_key}&results={results_live}"
     response = requests.get(url)
     data = response.json()
     feeds = data['feeds']
@@ -31,7 +41,7 @@ def fetch_data_from_thingspeak(channel_id, read_api_key):
 df = fetch_data_from_thingspeak(channel_id, read_api_key)
 
 def fetch_data_from_thingspeak_1h(channel_id, read_api_key):
-    url = f"https://api.thingspeak.com/channels/{channel_id}/feeds.json?api_key={read_api_key}&results=360"
+    url = f"https://api.thingspeak.com/channels/{channel_id}/feeds.json?api_key={read_api_key}&results={results_1h}"
     response = requests.get(url)
     data = response.json()
     feeds = data['feeds']
@@ -47,7 +57,7 @@ def fetch_data_from_thingspeak_1h(channel_id, read_api_key):
     return df
 
 def fetch_data_from_thingspeak_6h(channel_id, read_api_key):
-    url = f"https://api.thingspeak.com/channels/{channel_id}/feeds.json?api_key={read_api_key}&results=2160"
+    url = f"https://api.thingspeak.com/channels/{channel_id}/feeds.json?api_key={read_api_key}&results={results_6h}"
     response = requests.get(url)
     data = response.json()
     feeds = data['feeds']
@@ -63,7 +73,7 @@ def fetch_data_from_thingspeak_6h(channel_id, read_api_key):
     return df
 
 def fetch_data_from_thingspeak_12h(channel_id, read_api_key):
-    url = f"https://api.thingspeak.com/channels/{channel_id}/feeds.json?api_key={read_api_key}&results=4320"
+    url = f"https://api.thingspeak.com/channels/{channel_id}/feeds.json?api_key={read_api_key}&results={results_12h}"
     response = requests.get(url)
     data = response.json()
     feeds = data['feeds']
@@ -79,7 +89,7 @@ def fetch_data_from_thingspeak_12h(channel_id, read_api_key):
     return df
 
 def fetch_data_from_thingspeak_1d(channel_id, read_api_key):
-    url = f"https://api.thingspeak.com/channels/{channel_id}/feeds.json?api_key={read_api_key}&results=8640"
+    url = f"https://api.thingspeak.com/channels/{channel_id}/feeds.json?api_key={read_api_key}&results={results_1d}"
     response = requests.get(url)
     data = response.json()
     feeds = data['feeds']
@@ -95,7 +105,7 @@ def fetch_data_from_thingspeak_1d(channel_id, read_api_key):
     return df
 
 def fetch_data_from_thingspeak_1w(channel_id, read_api_key):
-    url = f"https://api.thingspeak.com/channels/{channel_id}/feeds.json?api_key={read_api_key}&results=60480"
+    url = f"https://api.thingspeak.com/channels/{channel_id}/feeds.json?api_key={read_api_key}&results={results_1w}"
     response = requests.get(url)
     data = response.json()
     feeds = data['feeds']
@@ -157,7 +167,7 @@ with st.container():
     period = st.selectbox("Selecione o período", ["Live", "1h", "6h", "12h", "1d", "1w"])
     
     if period == 'Live':
-        df_periodic = df[-30:]
+        df_periodic = df
     elif period == '1h':
         df_1h = fetch_data_from_thingspeak_1h(channel_id, read_api_key)
         df_periodic = df_1h
@@ -234,11 +244,10 @@ url_linkedIn = "https://www.linkedin.com/in/nicklindenmeyer/?originalSubdomain=b
 link_text_thingSpeak = "ThingSpeak"
 link_text_linkedIn = "Nicolas Lindenmeyer"
 
-st.write(f"Fonte: [{link_text_thingSpeak}]({url_thingSpeak})")
-st.write(f"Desenvolvido por [{link_text_linkedIn}]({url_linkedIn})")
+st.write("Fonte: [ThingSpeak](https://thingspeak.com/channels/2601361)")
+st.write("Desenvolvido por [Nicolas Lindenmeyer](https://www.linkedin.com/in/nicklindenmeyer/)")
 
-st.caption("Trabalho de conclusão de curso de Engenharia Elétrica")
-st.caption ("Universidade Luterana do Brasil | Canoas | 2024")
+st.caption("Trabalho de conclusão de curso de Engenharia Elétrica - Universidade Luterana do Brasil")
 st.caption("Aplicação desenvolvida em _Python_ com o uso da biblioteca _Streamlit_")
 
 time.sleep(update_interval)
