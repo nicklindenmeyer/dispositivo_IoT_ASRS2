@@ -7,23 +7,27 @@ import time
 channel_id = "2601361"
 read_api_key = "2IMZSGDD358HBWBD"
 
-#número de amostras = periodo em segundos / intervalo
+# número de amostras = periodo em segundos / intervalo
 interval_data = 10
-results_live = 300/interval_data  
+results_live = 300/interval_data
 results_1h = 3600/interval_data
 results_6h = 21600/interval_data
 results_12h = 43200/interval_data
 results_24h = 86400/interval_data
-#results_1w = 604800/interval_data
+# results_1w = 604800/interval_data
 
-#intervalo de tempo para a página recarregar 
+# intervalo de tempo para a página recarregar
 update_interval = 10
 
-st.set_page_config(page_title="Disposivito IoT para monitoramento de energia elétrica do ASRS²", page_icon=":zap:")
+st.set_page_config(
+    page_title="Disposivito IoT para monitoramento de energia elétrica do ASRS²", page_icon=":zap:")
 
-#@st.cache_data()
+# @st.cache_data()
+
+
 def fetch_data_from_thingspeak(channel_id, read_api_key):
-    url = f"https://api.thingspeak.com/channels/{channel_id}/feeds.json?api_key={read_api_key}&results={results_live}"
+    url = f"https://api.thingspeak.com/channels/{
+        channel_id}/feeds.json?api_key={read_api_key}&results={results_live}"
     response = requests.get(url)
     data = response.json()
     feeds = data['feeds']
@@ -37,11 +41,14 @@ def fetch_data_from_thingspeak(channel_id, read_api_key):
         'field5': 'apparent_power'
     })
     return df
+
 
 df = fetch_data_from_thingspeak(channel_id, read_api_key)
 
+
 def fetch_data_from_thingspeak_1h(channel_id, read_api_key):
-    url = f"https://api.thingspeak.com/channels/{channel_id}/feeds.json?api_key={read_api_key}&results={results_1h}"
+    url = f"https://api.thingspeak.com/channels/{
+        channel_id}/feeds.json?api_key={read_api_key}&results={results_1h}"
     response = requests.get(url)
     data = response.json()
     feeds = data['feeds']
@@ -55,9 +62,11 @@ def fetch_data_from_thingspeak_1h(channel_id, read_api_key):
         'field5': 'apparent_power'
     })
     return df
+
 
 def fetch_data_from_thingspeak_6h(channel_id, read_api_key):
-    url = f"https://api.thingspeak.com/channels/{channel_id}/feeds.json?api_key={read_api_key}&results={results_6h}"
+    url = f"https://api.thingspeak.com/channels/{
+        channel_id}/feeds.json?api_key={read_api_key}&results={results_6h}"
     response = requests.get(url)
     data = response.json()
     feeds = data['feeds']
@@ -71,9 +80,11 @@ def fetch_data_from_thingspeak_6h(channel_id, read_api_key):
         'field5': 'apparent_power'
     })
     return df
+
 
 def fetch_data_from_thingspeak_12h(channel_id, read_api_key):
-    url = f"https://api.thingspeak.com/channels/{channel_id}/feeds.json?api_key={read_api_key}&results={results_12h}"
+    url = f"https://api.thingspeak.com/channels/{
+        channel_id}/feeds.json?api_key={read_api_key}&results={results_12h}"
     response = requests.get(url)
     data = response.json()
     feeds = data['feeds']
@@ -87,9 +98,11 @@ def fetch_data_from_thingspeak_12h(channel_id, read_api_key):
         'field5': 'apparent_power'
     })
     return df
+
 
 def fetch_data_from_thingspeak_24h(channel_id, read_api_key):
-    url = f"https://api.thingspeak.com/channels/{channel_id}/feeds.json?api_key={read_api_key}&results={results_24h}"
+    url = f"https://api.thingspeak.com/channels/{
+        channel_id}/feeds.json?api_key={read_api_key}&results={results_24h}"
     response = requests.get(url)
     data = response.json()
     feeds = data['feeds']
@@ -104,13 +117,16 @@ def fetch_data_from_thingspeak_24h(channel_id, read_api_key):
     })
     return df
 
+
 def fetch_time_update(channel_id):
-    url = f"https://api.thingspeak.com/channels/{channel_id}/feeds/last.json?timezone=America%2FSao_Paulo"
+    url = f"https://api.thingspeak.com/channels/{
+        channel_id}/feeds/last.json?timezone=America%2FSao_Paulo"
     response = requests.get(url)
     data = response.json()
     data['created_at'] = pd.to_datetime(data['created_at'])
     df = data['created_at']
     return df
+
 
 time_update = fetch_time_update(channel_id)
 
@@ -135,21 +151,29 @@ delta_active_power = float(active_power) - float(old_active_power)
 delta_apparent_power = float(apparent_power) - float(old_apparent_power)
 
 with st.container():
-    st.title("Dispositivo :red[IoT] para monitoramento de energia elétrica do :red[ASRS²]:zap:")
-    st.subheader("LabCIM | Engenharia Elétrica | Ulbra | Canoas | RS", divider='rainbow')
+    st.title(
+        "Dispositivo :red[IoT] para monitoramento de energia elétrica do :red[ASRS²]:zap:")
+    st.subheader(
+        "LabCIM | Engenharia Elétrica | Ulbra | Canoas | RS", divider='rainbow')
     st.write(f"Última atualização: {time_update}")
 
     col1, col2, col3 = st.columns(3)
-    col1.metric("Tensão", f"{rms_voltage} V", f"{delta_rms_voltage:.2f} V", delta_color="off")
-    col2.metric("Corrente", f"{rms_current} A", f"{delta_rms_current:.2f} A", delta_color="inverse")
-    col3.metric("Fator de Potência", f"{power_factor}", f"{delta_power_factor:.2f}")
-    col1.metric("Potência Ativa", f"{active_power} W", f"{delta_active_power:.2f} W", delta_color='inverse')
-    col2.metric("Potência Aparente", f"{apparent_power} VA", f"{delta_apparent_power:.2f} VA", delta_color='inverse')
+    col1.metric("Tensão", f"{rms_voltage} V", f"{
+                delta_rms_voltage:.2f} V", delta_color="off")
+    col2.metric("Corrente", f"{rms_current} A", f"{
+                delta_rms_current:.2f} A", delta_color="inverse")
+    col3.metric("Fator de Potência", f"{power_factor}", f"{
+                delta_power_factor:.2f}")
+    col1.metric("Potência Ativa", f"{active_power} W", f"{
+                delta_active_power:.2f} W", delta_color='inverse')
+    col2.metric("Potência Aparente", f"{apparent_power} VA", f"{
+                delta_apparent_power:.2f} VA", delta_color='inverse')
     st.divider()
 
 with st.container():
-    period = st.selectbox("Selecione o período", ["Live", "1h", "6h", "12h", "24h"])
-    
+    period = st.selectbox("Selecione o período", [
+                          "Live", "1h", "6h", "12h", "24h"])
+
     if period == 'Live':
         df_periodic = df
     elif period == '1h':
@@ -164,7 +188,7 @@ with st.container():
     elif period == '24h':
         df_24h = fetch_data_from_thingspeak_24h(channel_id, read_api_key)
         df_periodic = df_24h
- 
+
     st.write("Tensão")
     voltage_chart = alt.Chart(df_periodic).mark_line().encode(
         x='created_at:T',
@@ -226,9 +250,11 @@ link_text_thingSpeak = "ThingSpeak"
 link_text_linkedIn = "Nicolas Lindenmeyer"
 
 st.write("Fonte: [ThingSpeak](https://thingspeak.com/channels/2601361)")
-st.write("Desenvolvido por [Nicolas Lindenmeyer](https://www.linkedin.com/in/nicklindenmeyer/)")
+st.write(
+    "Desenvolvido por [Nicolas Lindenmeyer](https://www.linkedin.com/in/nicklindenmeyer/)")
 
-st.caption("Trabalho de conclusão de curso de Engenharia Elétrica - Universidade Luterana do Brasil")
+st.caption(
+    "Trabalho de conclusão de curso de Engenharia Elétrica - Universidade Luterana do Brasil")
 st.caption("Aplicação desenvolvida em _Python_ com o uso da biblioteca _Streamlit_")
 
 time.sleep(update_interval)
