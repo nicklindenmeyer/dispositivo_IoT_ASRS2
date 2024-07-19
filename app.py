@@ -13,8 +13,8 @@ results_live = 300/interval_data
 results_1h = 3600/interval_data
 results_6h = 21600/interval_data
 results_12h = 43200/interval_data
-results_1d = 86400/interval_data
-results_1w = 604800/interval_data
+results_24h = 86400/interval_data
+#results_1w = 604800/interval_data
 
 #intervalo de tempo para a página recarregar 
 update_interval = 10
@@ -88,24 +88,8 @@ def fetch_data_from_thingspeak_12h(channel_id, read_api_key):
     })
     return df
 
-def fetch_data_from_thingspeak_1d(channel_id, read_api_key):
-    url = f"https://api.thingspeak.com/channels/{channel_id}/feeds.json?api_key={read_api_key}&results={results_1d}"
-    response = requests.get(url)
-    data = response.json()
-    feeds = data['feeds']
-    df = pd.DataFrame(feeds)
-    df['created_at'] = pd.to_datetime(df['created_at'])
-    df = df.rename(columns={
-        'field1': 'voltage',
-        'field2': 'current',
-        'field3': 'power_factor',
-        'field4': 'active_power',
-        'field5': 'apparent_power'
-    })
-    return df
-
-def fetch_data_from_thingspeak_1w(channel_id, read_api_key):
-    url = f"https://api.thingspeak.com/channels/{channel_id}/feeds.json?api_key={read_api_key}&results={results_1w}"
+def fetch_data_from_thingspeak_24h(channel_id, read_api_key):
+    url = f"https://api.thingspeak.com/channels/{channel_id}/feeds.json?api_key={read_api_key}&results={results_24h}"
     response = requests.get(url)
     data = response.json()
     feeds = data['feeds']
@@ -164,7 +148,7 @@ with st.container():
     st.divider()
 
 with st.container():
-    period = st.selectbox("Selecione o período", ["Live", "1h", "6h", "12h", "1d", "1w"])
+    period = st.selectbox("Selecione o período", ["Live", "1h", "6h", "12h", "24h"])
     
     if period == 'Live':
         df_periodic = df
@@ -177,12 +161,9 @@ with st.container():
     elif period == '12h':
         df_12h = fetch_data_from_thingspeak_12h(channel_id, read_api_key)
         df_periodic = df_12h
-    elif period == '1d':
-        df_1d = fetch_data_from_thingspeak_1d(channel_id, read_api_key)
-        df_periodic = df_1d
-    else:
-        df_1w = fetch_data_from_thingspeak_1w(channel_id, read_api_key)
-        df_periodic = df_1w
+    elif period == '24h':
+        df_24h = fetch_data_from_thingspeak_24h(channel_id, read_api_key)
+        df_periodic = df_24h
  
     st.write("Tensão")
     voltage_chart = alt.Chart(df_periodic).mark_line().encode(
