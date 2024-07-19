@@ -148,16 +148,11 @@ with st.container():
     st.write(f"Última atualização: {time_update}")
 
     col1, col2, col3 = st.columns(3)
-    col1.metric("Tensão", f"{rms_voltage} V", f"{
-                delta_rms_voltage:.2f} V", delta_color="off")
-    col2.metric("Corrente", f"{rms_current} A", f"{
-                delta_rms_current:.2f} A", delta_color="inverse")
-    col3.metric("Fator de Potência", f"{power_factor}", f"{
-                delta_power_factor:.2f}")
-    col1.metric("Potência Ativa", f"{active_power} W", f"{
-                delta_active_power:.2f} W", delta_color='inverse')
-    col2.metric("Potência Aparente", f"{apparent_power} VA", f"{
-                delta_apparent_power:.2f} VA", delta_color='inverse')
+    col1.metric("Tensão", f"{rms_voltage} V", f"{delta_rms_voltage:.2f} V", delta_color="off")
+    col2.metric("Corrente", f"{rms_current} A", f"{delta_rms_current:.2f} A", delta_color="inverse")
+    col3.metric("Fator de Potência", f"{power_factor}", f"{delta_power_factor:.2f}")
+    col1.metric("Potência Ativa", f"{active_power} W", f"{delta_active_power:.2f} W", delta_color='inverse')
+    col2.metric("Potência Aparente", f"{apparent_power} VA", f"{delta_apparent_power:.2f} VA", delta_color='inverse')
     st.divider()
 
 with st.container():
