@@ -3,7 +3,7 @@ import pandas as pd
 import requests
 import altair as alt
 import time
-
+from datetime import datetime, timedelta, timezone
 channel_id = "2601361"
 read_api_key = "2IMZSGDD358HBWBD"
 
@@ -17,10 +17,10 @@ results_24h = 86400/interval_data
 # results_1w = 604800/interval_data
 
 # intervalo de tempo para a página recarregar
-update_interval = 10
+update_interval = 5
 
 st.set_page_config(
-    page_title="Disposivito IoT para monitoramento de energia elétrica do ASRS²", page_icon=":zap:")
+    page_title="Disposivito IoT para monitoramento e análise de consumo de energia elétrica", page_icon=":zap:")
 
 # @st.cache_data()
 def fetch_data_from_thingspeak(channel_id, read_api_key):
@@ -35,7 +35,10 @@ def fetch_data_from_thingspeak(channel_id, read_api_key):
         'field2': 'current',
         'field3': 'power_factor',
         'field4': 'active_power',
-        'field5': 'apparent_power'
+        'field5': 'apparent_power',
+        'field6': 'temperature',
+        'field7': 'humidity'
+
     })
     return df
 
@@ -55,7 +58,9 @@ def fetch_data_from_thingspeak_1h(channel_id, read_api_key):
         'field2': 'current',
         'field3': 'power_factor',
         'field4': 'active_power',
-        'field5': 'apparent_power'
+        'field5': 'apparent_power',
+        'field6': 'temperature',
+        'field7': 'humidity'
     })
     return df
 
@@ -72,7 +77,9 @@ def fetch_data_from_thingspeak_6h(channel_id, read_api_key):
         'field2': 'current',
         'field3': 'power_factor',
         'field4': 'active_power',
-        'field5': 'apparent_power'
+        'field5': 'apparent_power',
+        'field6': 'temperature',
+        'field7': 'humidity'
     })
     return df
 
@@ -89,7 +96,9 @@ def fetch_data_from_thingspeak_12h(channel_id, read_api_key):
         'field2': 'current',
         'field3': 'power_factor',
         'field4': 'active_power',
-        'field5': 'apparent_power'
+        'field5': 'apparent_power',
+        'field6': 'temperature',
+        'field7': 'humidity'
     })
     return df
 
@@ -106,7 +115,9 @@ def fetch_data_from_thingspeak_24h(channel_id, read_api_key):
         'field2': 'current',
         'field3': 'power_factor',
         'field4': 'active_power',
-        'field5': 'apparent_power'
+        'field5': 'apparent_power',
+        'field6': 'temperature',
+        'field7': 'humidity'
     })
     return df
 
@@ -119,7 +130,6 @@ def fetch_time_update(channel_id):
     df = data['created_at']
     return df
 
-
 time_update = fetch_time_update(channel_id)
 
 latest_data = df.iloc[-1]
@@ -128,6 +138,8 @@ rms_current = latest_data['current']
 power_factor = latest_data['power_factor']
 active_power = latest_data['active_power']
 apparent_power = latest_data['apparent_power']
+temperature = latest_data['temperature']
+humidity = latest_data['humidity']
 
 latest_data = df.iloc[-2]
 old_rms_voltage = latest_data['voltage']
@@ -135,24 +147,30 @@ old_rms_current = latest_data['current']
 old_power_factor = latest_data['power_factor']
 old_active_power = latest_data['active_power']
 old_apparent_power = latest_data['apparent_power']
+old_temperature = latest_data['temperature']
+old_humidity = latest_data['humidity']
 
 delta_rms_voltage = float(rms_voltage) - float(old_rms_voltage)
 delta_rms_current = float(rms_current) - float(old_rms_current)
 delta_power_factor = float(power_factor) - float(old_power_factor)
 delta_active_power = float(active_power) - float(old_active_power)
 delta_apparent_power = float(apparent_power) - float(old_apparent_power)
+delta_temperature = float(temperature) - float(old_temperature)
+delta_humidity = float(humidity) - float(old_humidity)
 
 with st.container():
-    st.title("Dispositivo :red[IoT] para monitoramento de energia elétrica do :red[ASRS²]:zap:")
+    st.title(":zap: Dispositivo :red[IoT] para :orange[monitoramento] e :orange[análise de consumo] de :red[energia elétrica]:zap:")
     st.subheader("LabCIM | Engenharia Elétrica | Ulbra | Canoas | RS", divider='rainbow')
     st.write(f"Última atualização: {time_update}")
-
+ 
     col1, col2, col3 = st.columns(3)
     col1.metric("Tensão", f"{rms_voltage} V", f"{delta_rms_voltage:.2f} V", delta_color="off")
     col2.metric("Corrente", f"{rms_current} A", f"{delta_rms_current:.2f} A", delta_color="inverse")
     col3.metric("Fator de Potência", f"{power_factor}", f"{delta_power_factor:.2f}")
     col1.metric("Potência Ativa", f"{active_power} W", f"{delta_active_power:.2f} W", delta_color='inverse')
-    col2.metric("Potência Aparente", f"{apparent_power} VA", f"{delta_apparent_power:.2f} VA", delta_color='inverse')
+    col2.metric("Temperatura", f"{temperature} ºC", f"{delta_temperature:.2f} ºC", delta_color='inverse')
+    col3.metric("Umidade", f"{humidity} %", f"{delta_humidity:.2f}", delta_color="off")
+    ##col2.metric("Potência Aparente", f"{apparent_power} VA", f"{delta_apparent_power:.2f} VA", delta_color='inverse')
     st.divider()
 
 with st.container():
@@ -217,16 +235,38 @@ with st.container():
     st.altair_chart(active_power_chart, use_container_width=True)
     st.divider()
 
-    st.write("Potência Aparente")
-    apparent_power_chart = alt.Chart(df_periodic).mark_line().encode(
+    st.write("Temperatura")
+    temperature_chart = alt.Chart(df_periodic).mark_line().encode(
         x='created_at',
-        y='apparent_power:Q'
+        y='temperature:Q'
     ).properties(
         width='container',
         height=200
     )
-    st.altair_chart(apparent_power_chart, use_container_width=True)
+    st.altair_chart(temperature_chart, use_container_width=True)
     st.divider()
+
+    st.write("Umidade")
+    humidity_chart = alt.Chart(df_periodic).mark_line().encode(
+        x='created_at',
+        y='humidity:Q'
+    ).properties(
+        width='container',
+        height=200
+    )
+    st.altair_chart(humidity_chart, use_container_width=True)
+    st.divider()
+
+   ## st.write("Potência Aparente")
+    ##apparent_power_chart = alt.Chart(df_periodic).mark_line().encode(
+    ##    x='created_at',
+    ##    y='apparent_power:Q'
+    ##).properties(
+    ##    width='container',
+      ##  height=200
+   ## )
+    ##st.altair_chart(apparent_power_chart, use_container_width=True)
+    ##st.divider()
 
 url_thingSpeak = "https://thingspeak.com/channels/2601361"
 url_linkedIn = "https://www.linkedin.com/in/nicklindenmeyer/?originalSubdomain=br"
@@ -240,4 +280,4 @@ st.caption("Trabalho de conclusão de curso de Engenharia Elétrica - Universida
 st.caption("Aplicação desenvolvida em _Python_ com o uso da biblioteca _Streamlit_")
 
 time.sleep(update_interval)
-st.experimental_rerun()
+st.rerun()
